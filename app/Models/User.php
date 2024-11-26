@@ -15,8 +15,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
-        'password',
-        'role'
+        'password'
     ];
     
     protected $hidden = [
@@ -28,4 +27,14 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function contents()
+    {
+        return $this->hasMany(Content::class, 'user_id', 'id');
+    }
+
+    public function profile()
+    {
+        return $this->hasOne(Profile::class);
+    }
 }

@@ -14,7 +14,9 @@ return new class extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->string('title');
             $table->text('concept');
-            $table->string('status');
+            $table->enum('progress', ['being processed', 'unprocessed','upload pending','uploaded', 'All complete']);
+            $table->enum('status', ['pending', 'approved', 'rejected']);
+            $table->text('notes');
             $table->timestamps();
         });
     }

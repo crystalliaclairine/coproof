@@ -2,91 +2,69 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Content;
 use Illuminate\Http\Request;
-use App\Models\Content; // Pastikan model Content sudah ada
+use App\Models\User;
 
 class ContentController extends Controller
 {
-    /**
-     * Display a listing of the content.
-     */
     public function index()
     {
-        $contents = Content::paginate(10); // Sesuaikan jumlah per halaman
+        $contents = Content::all();
         return view('content.index', compact('contents'));
     }
 
-    /**
-     * Show the form for creating a new content.
-     */
     public function create()
     {
-        return view('content.create');
+        $users = User::all();
+        return view('content.create', compact('users'));
     }
 
-    /**
-     * Store a newly created content in storage.
-     */
     public function store(Request $request)
     {
-        // Validasi input
-        $request->validate([
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
             'title' => 'required|string|max:255',
             'concept' => 'required|string',
-            'status' => 'required|string'
+            'progress' => 'required|in:being processed,unprocessed,upload pending,uploaded,all complete',
+            'status' => 'required|in:pending,approved,rejected',
+            'notes' => 'nullable|string',
         ]);
 
-        // Simpan data baru
-        Content::create([
-            'user_id' => auth()->id(), // Simpan ID user yang membuat konten
-            'title' => $request->title,
-            'concept' => $request->concept,
-            'status' => $request->status
-        ]);
+        Content::create($validated);
 
-        return redirect()->route('content.index')->with('message', 'Content created successfully!');
+        return redirect()->route('content.index')->with('success', 'Content created successfully.');
     }
 
-    /**
-     * Show the form for editing the specified content.
-     */
-    public function edit($id)
+    public function show(Content $content)
     {
-        $content = Content::findOrFail($id);
+        // 
+    }
+
+    public function edit(Content $content)
+    {
         return view('content.edit', compact('content'));
     }
 
-    /**
-     * Update the specified content in storage.
-     */
-    public function update(Request $request, $id)
+    public function update(Request $request, Content $content)
     {
-        // Validasi input
         $request->validate([
             'title' => 'required|string|max:255',
             'concept' => 'required|string',
-            'status' => 'required|string'
+            'progress' => 'required|string',
+            'status' => 'required|string',
+            'notes' => 'nullable|string',
         ]);
 
-        // Update data
-        $content = Content::findOrFail($id);
-        $content->update([
-            'title' => $request->title,
-            'concept' => $request->concept,
-            'status' => $request->status
-        ]);
+        $content->update($request->all());
 
-        return redirect()->route('content.index')->with('message', 'Content updated successfully!');
+        return redirect()->route('content.index')->with('success', 'Content updated successfully.');
     }
 
-    /**
-     * Remove the specified content from storage.
-     */
-    public function destroy($id)
+    public function destroy(Content $content)
     {
-        $content = Content::findOrFail($id);
         $content->delete();
 
-        return redirect()->route('content.index')->with('message', 'Content deleted successfully!');
+        return redirect()->route('content.index')->with('success', 'Content deleted successfully.');
     }
 }
